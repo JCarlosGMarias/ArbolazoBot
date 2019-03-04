@@ -68,16 +68,19 @@ class Bot:
                     chat_id = msg["chat"]["id"]
 
                     try:
-                        await self._handle_text(session, msg["text"], message_id, chat_id)
+                        if "text" in msg:
+                            await self._handle_text(session, msg["text"], message_id, chat_id)
+                        elif "animation" in msg:
+                            await self._handle_animation(session, msg["animation"], message_id, chat_id)
                     except KeyError:
-                        await self._handle_animation(session, msg["animation"], message_id, chat_id)
+                        print("Unrecognized key in message")
 
                 await asyncio.sleep(4)
                 print("Task executed. Polling again...")
 
     async def _handle_text(self, session: aiohttp.ClientSession, content: str, sender: str, chat: str) -> None:
         for word in self.definitions:
-            if word in content:
+            if word in content.lower():
                 await self._send_tree(session, sender, chat)
                 break
 
